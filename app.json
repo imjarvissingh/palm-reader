@@ -1,0 +1,87 @@
+{
+  "expo": {
+    "name": "Lunara",
+    "slug": "lunara-palm-stars",
+    "scheme": "lunara",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0820",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0820"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.lunara.palmstars",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Lunara uses the camera only when you choose to photograph your palm. Photos stay on this device.",
+        "NSPhotoLibraryUsageDescription": "Lunara lets you pick an existing palm photo from your library. Photos stay on this device.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.lunara.palmstars",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0820",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Lunara uses the camera only when you choose to photograph your palm. Photos stay on this device.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Lunara lets you pick an existing palm photo from your library. Photos stay on this device.",
+          "cameraPermission": "Lunara uses the camera only when you choose to photograph your palm.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "backgroundColor": "#0B0820"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#C9A8FF"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

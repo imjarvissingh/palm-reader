@@ -155,3 +155,25 @@ describe('dreams', () => {
     expect(searchDreams('zzzz')).toHaveLength(0);
   });
 });
+
+describe('chinese zodiac, tarot and affirmations', () => {
+  const { chineseSign } = require('@/features/astro/chinese');
+  const { drawCard, MAJOR_ARCANA } = require('@/features/astro/tarot');
+  const { dailyAffirmation } = require('@/features/astro/affirmations');
+  it('finds the animal and element by year with a new-year caveat', () => {
+    expect(chineseSign({ year: 2024, month: 6, day: 1 })).toMatchObject({ animal: { name: 'Dragon' }, element: 'Wood' });
+    expect(chineseSign({ year: 1990, month: 8, day: 1 }).animal.name).toBe('Horse');
+    const early = chineseSign({ year: 2024, month: 2, day: 1 });
+    expect(early.previousIfBeforeNewYear.animal.name).toBe('Rabbit');
+    expect(chineseSign({ year: 2024, month: 3, day: 1 }).previousIfBeforeNewYear).toBeUndefined();
+  });
+  it('draws a valid card', () => {
+    expect(MAJOR_ARCANA).toHaveLength(22);
+    expect(drawCard(() => 0).name).toBe('The Fool');
+    expect(drawCard(() => 0.9999).name).toBe('The World');
+  });
+  it('gives a stable affirmation per day', () => {
+    const d = new Date(2026, 9, 12);
+    expect(dailyAffirmation(d, 'leo')).toBe(dailyAffirmation(d, 'leo'));
+  });
+});

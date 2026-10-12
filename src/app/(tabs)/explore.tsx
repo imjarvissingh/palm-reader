@@ -14,6 +14,8 @@ const TOOLS: { href: Href; icon: React.ComponentProps<typeof IconCircle>['name']
   { href: '/tools/moon', icon: 'moon-outline', title: 'Moon calendar', body: 'Calculated phases for every day of the month.' },
   { href: '/tools/dreams', icon: 'cloudy-night-outline', title: 'Dream meanings', body: 'Search 40 common dream symbols.' },
   { href: '/tools/vedic', icon: 'flower-outline', title: 'Vedic astrology', body: 'Your sidereal Sun sign, nakshatra and the basics of Jyotish.' },
+  { href: '/tools/chinese', icon: 'paw-outline', title: 'Chinese zodiac', body: 'Your animal and element from your birth year.' },
+  { href: '/tools/tarot', icon: 'albums-outline', title: 'Yes or no tarot', body: 'Draw one Major Arcana card for a quick answer.' },
   { href: '/learn', icon: 'book-outline', title: 'Learn', body: 'Short guides to palmistry and astrology.' },
 ];
 

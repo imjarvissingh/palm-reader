@@ -48,6 +48,8 @@ function RootStack() {
       <Stack.Screen name="tools/dreams" options={{ title: 'Dream meanings' }} />
       <Stack.Screen name="tools/moon" options={{ title: 'Moon calendar' }} />
       <Stack.Screen name="tools/vedic" options={{ title: 'Vedic astrology' }} />
+      <Stack.Screen name="tools/chinese" options={{ title: 'Chinese zodiac' }} />
+      <Stack.Screen name="tools/tarot" options={{ title: 'Yes or no tarot' }} />
       <Stack.Screen name="learn/index" options={{ title: 'Learn' }} />
       <Stack.Screen name="learn/[id]" options={{ title: '' }} />
       <Stack.Screen name="legal/privacy" options={{ title: 'Privacy' }} />

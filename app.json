@@ -14,7 +14,7 @@
       "backgroundColor": "#0B0820"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.lunara.palmstars",
       "buildNumber": "1",
       "infoPlist": {

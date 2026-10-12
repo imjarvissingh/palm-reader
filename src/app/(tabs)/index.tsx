@@ -9,6 +9,7 @@ import { PalmDiagram } from '@/components/PalmDiagram';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { Disclaimer, Eyebrow, IconCircle, Row, SectionHeader, ZodiacBadge } from '@/components/ui';
+import { dailyAffirmation } from '@/features/astro/affirmations';
 import { getMoonPhase } from '@/features/astro/moon';
 import { generateHoroscope } from '@/features/horoscope/generator';
 import { getSign } from '@/features/horoscope/zodiac';
@@ -71,6 +72,13 @@ export default function Home() {
           <Text tone="muted">Add your birth date or pick your sign to see your daily horoscope here.</Text>
         </Card>
       )}
+
+      <View style={styles.affirmation} accessible accessibilityLabel={`Today's affirmation: ${dailyAffirmation(today, signId)}`}>
+        <Eyebrow>Today’s affirmation</Eyebrow>
+        <Text variant="heading" style={{ fontStyle: 'italic' }}>
+          “{dailyAffirmation(today, signId)}”
+        </Text>
+      </View>
 
       {/* Palm scan CTA */}
       <View style={styles.palmCta}>
@@ -173,5 +181,6 @@ const styles = StyleSheet.create({
   lineDot: { width: 8, height: 8, borderRadius: 4 },
   toolGrid: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm },
   tool: { flex: 1, alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.md, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, minHeight: 96 },
+  affirmation: { gap: spacing.xs, paddingVertical: spacing.sm, paddingLeft: spacing.md, borderLeftWidth: 3, borderLeftColor: colors.gold },
   pill: { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: 'rgba(232,199,122,0.12)' },
 });

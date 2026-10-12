@@ -1,0 +1,190 @@
+name: Build apps
+
+# Builds the three deliverables on every pull request and push to main:
+#   web      production web app, deployed to GitHub Pages from main
+#   android  release APK (install directly) and AAB (Google Play)
+#   ios      release build for the iOS Simulator (an iPhone install needs Apple signing: use EAS)
+# Pushing a tag like v1.0.0 also publishes a GitHub Release with the files attached.
+#
+# Optional repository secrets (Settings > Secrets and variables > Actions):
+#   ANDROID_UPLOAD_KEYSTORE_BASE64, ANDROID_UPLOAD_STORE_PASSWORD,
+#   ANDROID_UPLOAD_KEY_ALIAS, ANDROID_UPLOAD_KEY_PASSWORD   sign Android with your Play upload key
+#   EXPO_TOKEN                                               enables the "Store builds (EAS)" job
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      eas:
+        description: Also start signed store builds on EAS (needs EXPO_TOKEN)
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Export web app
+        run: npx expo export --platform web --output-dir dist-web
+        env:
+          EXPO_BASE_URL: /${{ github.event.repository.name }}
+      # Single-page app: GitHub Pages serves 404.html for deep links, which boots the router.
+      - run: cp dist-web/index.html dist-web/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-web
+
+  deploy-web:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: web
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: 1
+          LUNARA_BUILD_NUMBER: ${{ github.run_number }}
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+            echo "LUNARA_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload.keystore" >> "$GITHUB_ENV"
+            echo "Signing with the upload key."
+          else
+            echo "::warning::No ANDROID_UPLOAD_KEYSTORE_BASE64 secret: the APK/AAB are signed with the debug key (fine to install, not accepted by Google Play)."
+          fi
+      - name: Build release APK and AAB
+        working-directory: android
+        run: ./gradlew assembleRelease bundleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
+        env:
+          LUNARA_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          LUNARA_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          LUNARA_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+      - name: Collect files
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk out/lunara-android.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab out/lunara-android.aab
+          "$ANDROID_HOME"/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner verify --print-certs out/lunara-android.apk | head -3
+          rm -f "$RUNNER_TEMP/upload.keystore"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lunara-android
+          path: out/*
+          if-no-files-found: error
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Use the newest stable Xcode on the runner
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|release_candidate' | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - run: npm ci
+      - name: Generate native iOS project and install pods
+        run: npx expo prebuild --platform ios
+        env:
+          CI: 1
+          LUNARA_BUILD_NUMBER: ${{ github.run_number }}
+      - name: Build release app for the iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild -workspace ios/Lunara.xcworkspace -scheme Lunara -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath ios/build CODE_SIGNING_ALLOWED=NO build | tail -40
+      - name: Collect files
+        run: |
+          mkdir -p out
+          cd ios/build/Build/Products/Release-iphonesimulator
+          zip -qry "$GITHUB_WORKSPACE/out/lunara-ios-simulator.zip" Lunara.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lunara-ios-simulator
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [web, android, ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lunara-*
+          merge-multiple: true
+          path: out
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --title "Lunara $GITHUB_REF_NAME" --generate-notes
+
+  eas:
+    if: github.event_name == 'workflow_dispatch' && inputs.eas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start signed store builds on EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then echo "::error::Add an EXPO_TOKEN repository secret first."; exit 1; fi
+          npx eas-cli@latest build --platform all --profile production --non-interactive --no-wait

@@ -1,0 +1,43 @@
+feature,area,priority,original,clone,notes
+Palm reading of seven lines (life heart head fate success marriage travel),palm,must,yes,yes,All seven lines with per-line interpretation and strength
+Answer questions about your palm to get a reading,palm,must,yes,yes,8-step guided questionnaire with diagrams; conditional follow-ups
+Palm photo capture,palm,must,yes,yes,expo-camera with palm-shaped guide; library picker; permission denied and no-camera states
+Detailed reading report,palm,must,yes,yes,Summary; top traits; 7 expandable lines; 4 themes
+Love life via heart line,palm,must,yes,yes,
+Health and vitality via life line,palm,must,yes,partial,Read for vitality and change only; deliberately no health or lifespan claims
+Personality via head line,palm,must,yes,yes,
+Marriage reading and improvement suggestions,palm,should,yes,yes,Marriage line count and shape incl. communication advice for downward curve
+Career and success via success line,palm,must,yes,yes,
+Destiny luck and fame via fate line,palm,should,yes,yes,
+Travel line reading,palm,should,yes,yes,
+Entertainment-only disclaimer,legal,must,yes,yes,Disclaimer on every reading surface plus Terms screen
+Daily horoscope,horoscope,must,yes,yes,Original date-seeded generator; all 12 signs
+Tomorrow weekly monthly horoscopes,horoscope,should,unknown,yes,Not confirmed on listing; built per brief
+Love career growth well-being sections,horoscope,should,unknown,yes,
+Zodiac sign selection and calculation,horoscope,must,yes,yes,From birth date with cusp flag or manual pick
+Numerology insights,astrology,should,yes,yes,Life path; expression; personal year (v9.6 notes)
+Chinese zodiac insights,astrology,could,yes,yes,Animal and element by birth year with Lunar New Year caveat
+Yes/No tarot,astrology,could,yes,yes,22 Major Arcana with original yes/no meanings
+Fortune cookie and affirmations,astrology,could,yes,partial,Daily affirmation on Home; no fortune cookie
+Dark mode,design,should,yes,yes,App is dark-first throughout
+Dream meaning content,astrology,should,yes,yes,40 original symbol entries with search (v11.8 notes)
+Moon calendar,astrology,should,yes,yes,Calculated phases; month grid; next full/new moon (v11.8 notes)
+Vedic astrology,astrology,should,yes,partial,Sidereal Sun rashi + nakshatra and Jyotish basics; no Moon sign or Panchang (needs birth time/place and ephemeris)
+Vedic quiz,astrology,could,yes,no,Listed in v11.0 notes; not built
+AI astrology chat,astrology,could,yes,skip,Requires a hosted LLM backend and keys; out of scope for a no-server build
+Astrology articles,learn,could,yes,yes,8 original short articles
+Premium subscriptions (monthly/yearly),premium,should,yes,skip,No store accounts configured; app is fully free and entitlement boundary is documented
+Paid report unlocks (IAPs),premium,could,yes,skip,Same as above
+Advertising,monetisation,could,yes,skip,Deliberately ad-free (reviewer complaint)
+Localisation (21 languages),platform,could,yes,no,English only
+iPhone and iPad support,platform,must,yes,yes,supportsTablet on; content column capped at 640pt and centred
+Android support,platform,must,unknown,yes,Expo build profiles for Android
+Zodiac compatibility,astrology,should,no,yes,Added per brief: love friendship work scores
+Reading history with favourites and delete,data,should,no,yes,Local only
+Reuse last palm photo instead of retaking,palm,should,no,yes,Fix for reviewer complaint about forced photos
+Photo is optional and never claimed as analysed,palm,must,no,yes,Fix for reviewer complaint that photo did not affect result
+Heart line break granularity question,palm,could,no,yes,Fix for reviewer suggestion about broken heart lines
+Works fully offline,platform,should,no,yes,Fix for reviewer complaint about sections needing internet
+Daily local reminder,notifications,could,no,yes,expo-notifications local schedule; no push token
+Data deletion controls,privacy,must,no,yes,Delete reading; clear history; erase all
+Share reading and horoscope as text,sharing,should,no,yes,Native share sheet

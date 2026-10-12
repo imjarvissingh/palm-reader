@@ -38,7 +38,6 @@ export const MAX_READINGS = 100;
 export function sanitizeName(name: unknown): string {
   if (typeof name !== 'string') return '';
   // Strip control characters and collapse whitespace.
-  // eslint-disable-next-line no-control-regex
   return name.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
 }
 

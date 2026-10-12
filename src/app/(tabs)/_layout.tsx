@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import type { ColorValue } from 'react-native';
+import { Platform, type ColorValue } from 'react-native';
 import { colors } from '@/theme/tokens';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -18,7 +18,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.textSubtle,
-        tabBarStyle: { backgroundColor: colors.bgElevated, borderTopColor: colors.border },
+        tabBarStyle: { backgroundColor: colors.bgElevated, borderTopColor: colors.border, ...(Platform.OS === 'web' ? { height: 64, paddingBottom: 8 } : null) },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         sceneStyle: { backgroundColor: colors.bg },
       }}

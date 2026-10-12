@@ -4,15 +4,21 @@ import Svg, { Circle } from 'react-native-svg';
 import { seededRandom } from '@/lib/random';
 
 /** Decorative, deterministic star field. Hidden from screen readers. */
-export function Starfield({ count = 60, seed = 7, height = 900 }: { count?: number; seed?: number; height?: number }) {
+export function Starfield({ count = 45, seed = 7, height = 900 }: { count?: number; seed?: number; height?: number }) {
   const stars = useMemo(() => {
     const r = seededRandom(seed);
-    return Array.from({ length: count }, () => ({
-      x: r() * 100,
-      y: r() * height,
-      size: 0.4 + r() * 1.3,
-      opacity: 0.25 + r() * 0.6,
-    }));
+    // Stars sit in the top band and along the side margins so they never
+    // land between letters of body text.
+    return Array.from({ length: count }, (_, i) => {
+      const inTopBand = i % 3 === 0;
+      const side = r() < 0.5 ? r() * 4 : 96 + r() * 4;
+      return {
+        x: inTopBand ? r() * 100 : side,
+        y: inTopBand ? r() * 36 : r() * height,
+        size: 0.4 + r() * 1.1,
+        opacity: 0.2 + r() * 0.5,
+      };
+    });
   }, [count, seed, height]);
 
   return (

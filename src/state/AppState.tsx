@@ -70,7 +70,9 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppStateProvider({ children, initial }: { children: React.ReactNode; initial?: PersistedState }) {
   const [state, dispatch] = useReducer(reducer, initial ? { ...initial, hydrated: true } : initialState);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     if (initial) return;

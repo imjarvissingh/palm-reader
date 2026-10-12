@@ -22,7 +22,7 @@ export default function Generating() {
   const { draft, reset } = usePalmDraft();
   const [failed, setFailed] = useState(false);
   const started = useRef(false);
-  const spin = useRef(new Animated.Value(0)).current;
+  const [spin] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const loop = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 2400, easing: Easing.inOut(Easing.quad), useNativeDriver: true }));

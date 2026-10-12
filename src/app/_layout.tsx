@@ -1,9 +1,12 @@
 import { CormorantGaramond_600SemiBold, CormorantGaramond_700Bold, useFonts } from '@expo-google-fonts/cormorant-garamond';
-import { Stack } from 'expo-router';
+import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
+import { Button } from '@/components/Button';
+import { Screen } from '@/components/Screen';
+import { EmptyState } from '@/components/ui';
 import { AppStateProvider, useApp } from '@/state/AppState';
 import { PalmDraftProvider } from '@/state/palmDraft';
 import { colors, fonts } from '@/theme/tokens';
@@ -56,19 +59,41 @@ function RootStack() {
       <Stack.Screen name="legal/terms" options={{ title: 'Terms & disclaimer' }} />
       <Stack.Screen name="premium" options={{ title: 'Lunara Plus', presentation: 'modal' }} />
       <Stack.Screen name="edit-profile" options={{ title: 'Your details' }} />
+      <Stack.Screen name="+not-found" options={{ title: 'Not found' }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <AppStateProvider>
         <PalmDraftProvider>
           <StatusBar style="light" />
           <RootStack />
         </PalmDraftProvider>
       </AppStateProvider>
+    </SafeAreaProvider>
+  );
+}
+
+// Rendered by Expo Router in place of the app when a screen throws, so the user is never left on a
+// blank screen or a stuck splash. The error itself is not logged: it can contain personal data.
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  useEffect(() => {
+    void SplashScreen.hideAsync().catch(() => undefined);
+  }, []);
+  return (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <StatusBar style="light" />
+      <Screen testID="error-boundary">
+        <EmptyState
+          icon="cloudy-night-outline"
+          title="Something went wrong"
+          body="Lunara hit an unexpected problem. Your readings are still saved on this device."
+          action={<Button label="Try again" onPress={() => void retry()} />}
+        />
+      </Screen>
     </SafeAreaProvider>
   );
 }

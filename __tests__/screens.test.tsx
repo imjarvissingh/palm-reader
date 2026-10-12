@@ -31,6 +31,11 @@ jest.mock('@/features/palm/photoStore', () => ({ deletePhoto: jest.fn(), deleteA
 const mockConfirm = jest.fn(async () => true);
 jest.mock('@/lib/confirm', () => ({ confirmDestructive: () => mockConfirm() }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  initialWindowMetrics: { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } },
+}));
+
 const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } };
 
 function wrap(ui: React.ReactElement, initial: PersistedState = DEFAULT_STATE) {
@@ -160,5 +165,24 @@ describe('horoscope tab', () => {
     expect(screen.getAllByText(/VIRGO · \w{3} \d+ – /).length).toBeGreaterThan(0);
     await fireEvent.press(screen.getByTestId('horo-sign-pisces'));
     expect(screen.getAllByText(/PISCES ·/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('error and not-found screens', () => {
+  it('shows a recoverable error screen instead of crashing', async () => {
+    const { ErrorBoundary } = require('@/app/_layout');
+    const retry = jest.fn(async () => undefined);
+    await render(<ErrorBoundary error={new Error('boom')} retry={retry} />);
+    expect(screen.getByText('Something went wrong')).toBeTruthy();
+    expect(screen.queryByText(/boom/)).toBeNull();
+    await fireEvent.press(screen.getByText('Try again'));
+    expect(retry).toHaveBeenCalled();
+  });
+
+  it('sends unknown links home', async () => {
+    const NotFound = require('@/app/+not-found').default;
+    await wrap(<NotFound />);
+    await fireEvent.press(screen.getByText('Go home'));
+    expect(mockRouter.replace).toHaveBeenCalledWith('/');
   });
 });

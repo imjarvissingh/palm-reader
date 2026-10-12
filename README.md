@@ -80,7 +80,7 @@ None required. Optional settings are in [`.env.example`](.env.example) (copy to 
 ```bash
 npm run typecheck     # tsc --noEmit (strict)
 npm run lint          # expo lint
-npm test              # 79 Jest + RNTL tests
+npm test              # 84 Jest + RNTL tests
 npm run export:check  # Hermes bundles for Android and iOS
 npm run validate      # typecheck + lint + tests
 ```
@@ -88,7 +88,36 @@ npm run validate      # typecheck + lint + tests
 CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests, the Android/iOS bundle export and
 `npm audit` (fails on critical) on every push and pull request. Details: [`replica/test-report.md`](replica/test-report.md).
 
-## Build profiles (`eas.json`)
+## Builds and releases
+
+`.github/workflows/release.yml` ("Build apps") runs on every pull request and push to `main`:
+
+| Output | Where to get it | Install |
+| --- | --- | --- |
+| Web app | Deployed to GitHub Pages from `main`: `https://<owner>.github.io/palm-reader/` | Open in any browser; "Add to Home Screen" works on iPhone and Android |
+| Android APK + AAB | Run artifact `lunara-android` | APK: open on the phone and allow the install. AAB: upload to Google Play |
+| iOS Simulator build | Run artifact `lunara-ios-simulator` | Unzip and drag `Lunara.app` onto a running simulator |
+
+Push a tag such as `v1.0.0` to publish a GitHub Release with all files attached. Every build gets
+the workflow run number as its Android `versionCode` / iOS `buildNumber`.
+
+### Going to the stores (one-time setup)
+
+1. **Web:** Settings → Pages → Source: **GitHub Actions**. The next push to `main` deploys it.
+2. **Google Play:** create an upload key (`keytool -genkeypair -v -storetype JKS -keystore upload.jks
+   -alias upload -keyalg RSA -keysize 2048 -validity 10000`), then add repository secrets
+   `ANDROID_UPLOAD_KEYSTORE_BASE64` (`base64 -w0 upload.jks`), `ANDROID_UPLOAD_STORE_PASSWORD`,
+   `ANDROID_UPLOAD_KEY_ALIAS` and `ANDROID_UPLOAD_KEY_PASSWORD`. Builds are then signed with it
+   (`plugins/withReleaseSigning.js`); without them they use the debug key, which installs fine but
+   Play rejects. Upload the AAB in the Play Console. Keep `upload.jks` out of the repo.
+3. **App Store / real iPhones:** needs an Apple Developer account ($99/year). Run
+   `npx eas-cli@latest login` and `npx eas-cli@latest init` once and commit the `projectId` it adds,
+   then either `npx eas-cli@latest build --profile production --platform ios` and
+   `npx eas-cli@latest submit --platform ios`, or add an `EXPO_TOKEN` secret and run the workflow
+   manually with "Also start signed store builds on EAS". For testers before release use
+   `--profile preview` (ad-hoc) or TestFlight.
+
+### Build profiles (`eas.json`)
 
 | profile | output |
 | --- | --- |
@@ -132,6 +161,8 @@ __tests__/        Jest + RNTL tests
 replica/          replica-skill outputs: recon, features matrix, parity, architecture, brand
 .claude/skills/   replica-skill pack (MIT), installed project-locally
 scripts/          icon generator
+plugins/          Expo config plugins (Android release signing)
+public/           web index.html (title, meta, theme colour)
 ```
 
 ## Credits
